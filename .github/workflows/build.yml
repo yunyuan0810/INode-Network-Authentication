@@ -35,7 +35,7 @@ jobs:
         run: |
           make defconfig
           make package/luci-app-zzz/compile -j$(nproc) V=s
-        
+          make package/zzz-client/compile -j$(nproc) V=s
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
