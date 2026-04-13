@@ -26,7 +26,13 @@ get_gateway() {
 		echo "$gw_cfg"
 		return
 	fi
-	ip route show default 2>/dev/null | awk '{print $3}' | head -n1
+	local gw
+	gw="$(ip route show default 2>/dev/null | awk 'NR==1{print $3}')"
+	if [ -n "$gw" ]; then
+		echo "$gw"
+	else
+		log_msg "WARNING: No default route found, will fall back to public DNS check"
+	fi
 }
 
 # Main check function: returns 0 if connected, 1 if disconnected

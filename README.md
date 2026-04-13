@@ -29,7 +29,7 @@ OpenWrt 的 LuCI 图形界面插件，用于配置和管理 [zzz](https://github
 
 安装完成后，在 LuCI 界面中进入 **服务 → 802.1X 客户端**，填写以下信息：
 
-![alt text](image.png)
+![alt text](zzzlicent.png)
 
 需根据具体的路由器型号选择wan口代号
 可在openwrt中的 网络-接口中查看或在ssh中运行ip link show

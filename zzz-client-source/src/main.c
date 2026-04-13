@@ -11,8 +11,16 @@
 #include <pcap/pcap.h>
 #include <signal.h>
 
-void sig_exit(int sig) {
-  printf("\r");
+// Set by the signal handler; checked in the main loop.
+// volatile sig_atomic_t is the only type safe to write from a signal handler.
+static volatile sig_atomic_t g_exit_flag = 0;
+
+static void sig_handler(int sig) {
+  (void)sig;
+  g_exit_flag = 1;
+}
+
+static void do_exit(void) {
   if (g_device.handle) {
     send_signoff_packet();
     pcap_close(g_device.handle);
@@ -27,16 +35,20 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  signal(SIGINT, sig_exit);
+  signal(SIGINT, sig_handler);
+  signal(SIGTERM, sig_handler);
   config_init(argv[1]);
   device_init(g_config.device);
   packet_init_default();
   crypto_init();
 
   auth_handshake();
-  while (auth_loop() == 0) {
+  int ret;
+  while ((ret = auth_loop()) == 0) {
+    if (g_exit_flag)
+      do_exit();
   }
-  sig_exit(0);
+  do_exit();
 
   return 0;
 }

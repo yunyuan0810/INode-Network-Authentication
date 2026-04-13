@@ -15,9 +15,9 @@ jobs:
 
       - name: Setup OpenWrt SDK
         run: |
-          wget https://downloads.openwrt.org/releases/23.05.0-rc1/targets/ipq40xx/generic/openwrt-sdk-23.05.0-rc1-ipq40xx-generic_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          tar -xf openwrt-sdk-23.05.0-rc1-ipq40xx-generic_gcc-12.3.0_musl_eabi.Linux-x86_64.tar.xz
-          mv openwrt-sdk-23.05.0-rc1-ipq40xx-generic_gcc-12.3.0_musl_eabi.Linux-x86_64 openwrt-sdk
+          wget https://downloads.openwrt.org/releases/23.05.2/targets/ramips/mt7620/openwrt-sdk-23.05.2-ramips-mt7620_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          tar -xf openwrt-sdk-23.05.2-ramips-mt7620_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          mv openwrt-sdk-23.05.2-ramips-mt7620_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
 
       - name: Install feeds
         working-directory: openwrt-sdk
@@ -45,5 +45,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: zzz-ipq40xx
+          name: zzz-ramips-mt7620
           path: openwrt-sdk/bin/packages/**/*.ipk

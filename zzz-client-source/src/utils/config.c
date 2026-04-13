@@ -55,7 +55,7 @@ static int config_handler(void *user, const char *section, const char *name,
     g_config.device = copy;
   } else {
     free(copy);
-    return 0; // unknown section/key
+    return 1; // unknown section/key — not an error, just skip
   }
 
   return 1;

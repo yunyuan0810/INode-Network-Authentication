@@ -39,41 +39,43 @@ int auth_loop(void) {
     return 1;
   }
 
-  // in case if there's an error
-  uint8_t err_msg_size = g_pkt->eap_type_data[0];
-  char err_msg[err_msg_size + 1];
-
   switch (g_pkt->eap_code) {
 
   case EAP_CODE_SUCCESS:
     log_info("auth success (^_^)", NULL);
-    break;
+    // Return immediately — do NOT fall through to the eap_type switch.
+    // EAP Success packets have no type field; reading eap_type would be
+    // out-of-bounds garbage and could trigger a spurious response packet.
+    return 0;
 
   case EAP_CODE_FAILURE:
     log_error("auth failed (T_T)", NULL);
 
     switch (g_pkt->eap_type) {
 
-    case EAP_TYPE_MD5_FAILURE:
+    case EAP_TYPE_MD5_FAILURE: {
+      uint8_t err_msg_size = g_pkt->eap_type_data[0];
       if (err_msg_size > 0) {
+        char err_msg[err_msg_size + 1];
         memcpy(err_msg, (const char *)(g_pkt->eap_type_data + 1), err_msg_size);
         err_msg[err_msg_size] = '\0';
         log_error(err_msg, NULL);
       }
       return 2;
-      break;
+    }
 
     case EAP_TYPE_KICKOFF:
-      log_error("server kickoff", NULL);
-      // TODO: restart auth
-      break;
+      log_error("server kickoff — will restart", NULL);
+      // Return a distinct code so the main loop exits and procd can respawn.
+      return 3;
 
     default:
       log_error("unsupported eap error ", "type", g_pkt->eap_type);
       exit(EXIT_FAILURE);
     }
 
-    break;
+    // unreachable, but keeps the compiler happy
+    return 2;
 
   case EAP_CODE_REQUESTS:
     log_info("server requesting...", "type", g_pkt->eap_type);
@@ -84,13 +86,14 @@ int auth_loop(void) {
       aes_md5_set_response(g_pkt->eap_type_data + 2);
       log_info("integrity set", NULL);
     }
-    break;
+    return 0;
 
   default:
     log_warn("unknown eap", "code", g_pkt->eap_code);
-    break;
+    return 0;
   }
 
+  // Only reached for EAP_CODE_REQUESTS — handle the requested type.
   switch (g_pkt->eap_type) {
 
   case EAP_TYPE_IDENTITY:

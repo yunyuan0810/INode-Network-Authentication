@@ -29,15 +29,17 @@ o.password = true
 o.rmempty = false
 
 -- Advanced EAP settings
-o = s:option(ListValue, "eap_method", "EAP 认证方法")
-o:value("", "默认 (自动协商)")
+o = s:option(ListValue, "eap_method", "EAP 认证方法",
+	"当前后端仅实现 EAP-MD5，其余方法保留供未来扩展，选择后不影响实际认证行为。")
+o:value("", "默认 (EAP-MD5)")
 o:value("MD5", "EAP-MD5")
-o:value("PEAP", "EAP-PEAP")
-o:value("TTLS", "EAP-TTLS")
-o:value("TLS", "EAP-TLS")
+o:value("PEAP", "EAP-PEAP (暂不支持)")
+o:value("TTLS", "EAP-TTLS (暂不支持)")
+o:value("TLS", "EAP-TLS (暂不支持)")
 o.rmempty = true
 
-o = s:option(ListValue, "phase2", "第二阶段认证 (Phase 2)")
+o = s:option(ListValue, "phase2", "第二阶段认证 (Phase 2)",
+	"EAP-MD5 不使用第二阶段，此选项仅在未来支持 PEAP/TTLS 后生效。")
 o:value("", "无 / 自动")
 o:value("MSCHAPv2", "MSCHAPv2")
 o:value("MSCHAP", "MSCHAP")
