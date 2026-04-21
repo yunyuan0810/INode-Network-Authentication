@@ -10,40 +10,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Setup OpenWrt SDK
-        run: 
-          wget https://downloads.openwrt.org/releases/24.10.6/targets/x86/64/openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
-          tar -xf openwrt-sdk-23.05.2-ramips-mt7620_gcc-12.3.0_musl.Linux-x86_64.tar.xz
-          mv openwrt-sdk-23.05.2-ramips-mt7620_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
+    - name: Setup OpenWrt SDK
+      run: |
+        wget https://downloads.openwrt.org/releases/24.10.6/targets/x86/64/openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+        tar -xf openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
+        mv openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64 openwrt-sdk
 
-      - name: Install feeds
-        working-directory: openwrt-sdk
-        run: |
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+    - name: Install feeds
+      working-directory: openwrt-sdk
+      run: |
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
 
-      - name: Copy packages into SDK
-        run: |
-          cp -r luci-app-zzz openwrt-sdk/package/luci-app-zzz
-          cp -r zzz-client-source openwrt-sdk/package/zzz-client
+    - name: Copy packages into SDK
+      run: |
+        cp -r luci-app-zzz openwrt-sdk/package/luci-app-zzz
+        cp -r zzz-client-source openwrt-sdk/package/zzz-client
 
+    - name: Check zzz-client structure
+      run: |
+        if [ -f "zzz-client-source/Makefile" ]; then
+          echo "zzz-client Makefile found"
+        else
+          echo "Warning: zzz-client-source/Makefile not found"
+          ls -la zzz-client-source/
+        fi
 
-      - name: Check zzz-client structure
-        run: |
-          find openwrt-sdk/package/zzz-client/ -type f
+    - name: Configure build
+      working-directory: openwrt-sdk
+      run: |
+        echo 'CONFIG_ALL_NONSHARED=y' > .config
+        echo 'CONFIG_PACKAGE_luci-app-zzz=y' >> .config
+        echo 'CONFIG_PACKAGE_zzz-client=y' >> .config
+        make defconfig
 
-      - name: Build
-        working-directory: openwrt-sdk
-        run: |
-          make defconfig
-          make package/luci-app-zzz/compile -j$(nproc) V=s
-          make package/zzz-client/compile -j$(nproc) V=s
+    - name: Build packages
+      working-directory: openwrt-sdk
+      run: |
+        make package/zzz-client/compile -j$(nproc)
+        make package/luci-app-zzz/compile -j$(nproc)
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: zzz-ramips-mt7620
-          path: openwrt-sdk/bin/packages/**/*.ipk
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: openwrt-ipk-packages
+        path: |
+          openwrt-sdk/bin/packages/x86_64/base/*.ipk
+          openwrt-sdk/bin/targets/x86/64/packages/*.ipk
