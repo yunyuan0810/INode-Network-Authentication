@@ -15,9 +15,9 @@ jobs:
 
     - name: Setup OpenWrt SDK
       run: |
-        wget https://downloads.openwrt.org/releases/24.10.6/targets/x86/64/openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
-        tar -xf openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst
-        mv openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64 openwrt-sdk
+        wget https://downloads.openwrt.org/releases/23.05.6/targets/x86/64/openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+        tar -xf openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+        mv openwrt-sdk-23.05.6-x86-64_gcc-12.3.0_musl.Linux-x86_64 openwrt-sdk
 
     - name: Install feeds
       working-directory: openwrt-sdk
@@ -29,15 +29,6 @@ jobs:
       run: |
         cp -r luci-app-zzz openwrt-sdk/package/luci-app-zzz
         cp -r zzz-client-source openwrt-sdk/package/zzz-client
-
-    - name: Check zzz-client structure
-      run: |
-        if [ -f "zzz-client-source/Makefile" ]; then
-          echo "zzz-client Makefile found"
-        else
-          echo "Warning: zzz-client-source/Makefile not found"
-          ls -la zzz-client-source/
-        fi
 
     - name: Configure build
       working-directory: openwrt-sdk
